@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Создать открытку — TBM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="left">
+      <h1>Создать открытку</h1>
+
+      <form id="messageForm" class="form-card" autocomplete="off">
+        <label for="recipient">Имя получателя</label>
+        <input id="recipient" name="recipient" type="text" placeholder="Дарина" required>
+
+        <label for="sender">От кого</label>
+        <input id="sender" name="sender" type="text" placeholder="Магазин TBM">
+
+        <label for="message">Послание</label>
+        <textarea id="message" name="message" rows="4" placeholder="Ты — лучшая!"></textarea>
+
+        <label for="flowers">Состав букета (опционально)</label>
+        <input id="flowers" name="flowers" type="text" placeholder="Розы, пион, эвкалипт">
+
+        <div class="controls">
+          <button class="btn primary" type="submit">Создать QR</button>
+        </div>
+      </form>
+
+      <div id="result" class="result hidden">
+        <h2>QR-код открытки</h2>
+        <div id="qrcode" class="qrcode-box"></div>
+        <div class="result-actions">
+          <a id="openLink" class="link" target="_blank" rel="noopener">Открыть открытку</a>
+          <button id="downloadBtn" class="btn">Скачать QR</button>
+          <button id="copyBtn" class="btn">Копировать ссылку</button>
+        </div>
+        <p class="muted">Ссылка зашифрована. Если обрезать параметр — открытка не откроется.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- QR библиотека -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
