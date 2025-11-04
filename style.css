@@ -1,0 +1,75 @@
+/* Общие базовые стили */
+:root{
+  --bg1: #fff9fb;
+  --bg2: #fff4f6;
+  --accent: #e04f5f;
+  --muted: #7b7b7b;
+  --card-w: min(700px, 92vw);
+  --card-aspect: 3/2;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+
+/* === index.html (форма) === */
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(180deg,var(--bg1),var(--bg2));}
+.left{width:100%;max-width:420px}
+.left h1{margin:0 0 12px;font-size:22px;color:#333}
+.form-card{background:linear-gradient(180deg,#ffffff,#fffaf9);border-radius:14px;padding:18px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 12px 40px rgba(224,79,95,0.06)}
+.form-card label{display:block;margin-top:12px;color:var(--muted);font-weight:600;font-size:13px}
+.form-card input,.form-card textarea{
+  width:100%;margin-top:6px;padding:12px;border-radius:10px;border:1px solid #eee;font-size:15px;background:transparent;box-sizing:border-box;
+}
+.form-card textarea{min-height:96px;resize:vertical}
+.controls{display:flex;gap:10px;margin-top:16px}
+.btn{border:0;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700}
+.btn.primary{background:var(--accent);color:#fff;flex:1}
+.result{margin-top:18px;background:linear-gradient(180deg,#fff,#fff9f9);padding:14px;border-radius:12px;border:1px solid rgba(0,0,0,0.03)}
+.qrcode-box{display:flex;justify-content:center;padding:12px}
+.result-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.link{color:var(--accent);font-weight:700}
+.muted{color:var(--muted);font-size:13px;margin-top:8px}
+.hidden{display:none}
+
+/* === card.html (открытка) === */
+.card-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,#fffaf9,#fff6f7)}
+.card-scene{width:100%;display:flex;justify-content:center;align-items:center;gap:16px;flex-direction:column}
+
+/* карточка-рамка (чтобы было ощущение реальной открытки) */
+.card{width:var(--card-w);aspect-ratio:var(--card-aspect);border-radius:20px;background:linear-gradient(180deg,#fffefc,#fff8f8);box-shadow:0 30px 80px rgba(0,0,0,0.12);border:1px solid rgba(224,79,95,0.06);overflow:hidden;opacity:0;transform:translateY(18px);transition:opacity .7s ease, transform .7s cubic-bezier(.2,.9,.3,1)}
+.card.visible{opacity:1;transform:none}
+.card-inner{display:flex;height:100%;align-items:center;justify-content:center;padding:28px}
+.frame{position:relative;width:100%;height:100%;background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,252,252,0.95));border-radius:14px;padding:28px;box-shadow:inset 0 2px 12px rgba(224,79,95,0.02);display:flex;flex-direction:column;justify-content:space-between}
+
+/* контент открытки */
+.card-header{display:block}
+.recipient{font-size:30px;margin:0;color:#b43b4b;font-weight:800;text-align:left}
+.flowers-line{font-size:13px;margin:6px 0;color:var(--muted)}
+.message{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 18px;font-size:18px;line-height:1.45;color:#2a2a2a;white-space:pre-wrap;transform-origin:center;opacity:0;animation:showMessage .9s forwards .3s}
+@keyframes showMessage{to{opacity:1;transform:none}from{opacity:0;transform:translateY(8px)}}
+
+.card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.sender{font-size:15px;color:#6a6a6a}
+.date{font-size:13px;color:var(--muted)}
+
+/* падающие лепестки — контейнер и базовые стили */
+.petal-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.petal{position:absolute;left:0;top:-6%;display:block;animation-name:fall, sway;animation-iteration-count:infinite;animation-timing-function:linear, ease-in-out;will-change:transform,opacity}
+@keyframes fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:0}10%{opacity:1}100%{transform:translateY(120vh) rotate(360deg);opacity:0.9}}
+@keyframes sway{0%{transform:translateX(0)}50%{transform:translateX(8px)}100%{transform:translateX(0)}}
+
+/* hint для iOS, если нужен */
+.tap-hint{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:rgba(255,255,255,0.92);padding:8px 12px;border-radius:999px;border:1px solid rgba(0,0,0,0.06);font-weight:700;color:#333}
+
+/* сообщение об ошибке */
+.error{background:#fff0f0;border:1px solid #f2c5c8;padding:10px;border-radius:10px;color:#9a2b3b;max-width:400px;text-align:center}
+
+/* адаптив */
+@media (max-width:520px){
+  :root{--card-w: 94vw}
+  .recipient{font-size:22px}
+  .message{font-size:16px;padding:8px}
+  .frame{padding:18px}
+  .form-card{padding:14px}
+}
