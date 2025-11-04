@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Твоё послание — TBM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="card-page">
+  <div class="card-scene">
+    <article id="card" class="card" role="document" aria-live="polite">
+      <div class="card-inner">
+        <div class="frame">
+          <div id="petalLayer" class="petal-layer" aria-hidden="true"></div>
+
+          <header class="card-header">
+            <h1 id="recipientName" class="recipient"></h1>
+            <p id="flowersLine" class="flowers-line"></p>
+          </header>
+
+          <section id="messageText" class="message"></section>
+
+          <footer class="card-footer">
+            <div id="senderLine" class="sender"></div>
+            <div id="dateLine" class="date muted"></div>
+          </footer>
+        </div>
+      </div>
+    </article>
+
+    <div id="errorBox" class="error hidden">Открытка недоступна — данные повреждены или отсутствуют.</div>
+  </div>
+
+  <!-- Лёгкий инструментальный трек (пианино + струнные) — бесплатная ссылка -->
+  <audio id="bgAudio" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6b3f5ea2b1.mp3?filename=soft-piano-violin-10807.mp3" type="audio/mpeg">
+    <!-- Если хочешь заменить — положи melody.mp3 рядом и вставь "melody.mp3" -->
+  </audio>
+
+<script>
+/* card.html logic:
+ - читает p (формат: base64url(json)).checksum
+ - проверяет checksum (SHA-256 → первые 12 hex)
+ - заполняет карточку
+ - пытается запустить музыку с fade-in 3s; если блокировка — просит клик (iOS)
+ - создает падающие лепестки визуально
+*/
+
+function b64DecodeUnicode(str){
+  str = str.replace(/-/g,'+').replace(/_/g,'/');
+  while(str.length % 4) str += '=';
+  return decodeURIComponent(escape(atob(str)));
+}
+async function sha256hex(msg){
+  const enc = new TextEncoder();
+  const data = enc.encode(msg);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function showError(){
+  document.getElementById('errorBox').classList.remove('hidden');
+  document.getElementById('card').classList.remove('visible');
+}
+
+(async function(){
+  const params = new URLSearchParams(location.search);
+  const p = params.get('p');
+  if(!p) return showError();
+
+  const parts = p.split('.');
+  if(parts.length !== 2) return showError();
+  const [b64, checksum] = parts;
+
+  let json;
+  try { json = b64DecodeUnicode(b64); } catch(e){ return showError(); }
+
+  const computed = await sha256hex(json);
+  if(computed.slice(0,12) !== checksum) return showError();
+
+  let data;
+  try { data = JSON.parse(json); } catch(e){ return showError(); }
+
+  // Заполняем карточку (имя без "Для")
+  document.getElementById('recipientName').textContent = data.recipient || '';
+  document.getElementById('messageText').textContent = data.message || '';
+  document.getElementById('flowersLine').textContent = data.flowers ? '🌷 ' + data.flowers : '';
+  document.getElementById('senderLine').textContent = data.sender ? 'От: ' + data.sender : '';
+  document.getElementById('dateLine').textContent = new Date(data.date || Date.now()).toLocaleDateString('ru-RU');
+
+  // показываем карточку
+  document.getElementById('card').classList.add('visible');
+
+  // падающие лепестки (emoji) — разные скорости и задержки
+  const petalLayer = document.getElementById('petalLayer');
+  for(let i=0;i<28;i++){
+    const el = document.createElement('span');
+    el.className = 'petal';
+    el.textContent = ['🌸','🌼','🌷','🌺'][Math.floor(Math.random()*4)];
+    el.style.left = (Math.random()*100) + '%';
+    const s = 8 + Math.random()*10;
+    el.style.animationDuration = s + 's';
+    el.style.animationDelay = (Math.random()*4) + 's';
+    el.style.opacity = 0.6 + Math.random()*0.4;
+    el.style.transform = `scale(${0.7 + Math.random()*0.9})`;
+    petalLayer.appendChild(el);
+  }
+
+  // Музыка с fade-in 3s
+  const audio = document.getElementById('bgAudio');
+  let playing = false;
+  async function fadeInAudio(duration = 3){
+    try {
+      audio.volume = 0;
+      await audio.play();
+      playing = true;
+      const steps = 30;
+      let i = 0;
+      const interval = duration*1000/steps;
+      const timer = setInterval(()=> {
+        i++;
+        audio.volume = Math.min(1, i/steps);
+        if(i>=steps) clearInterval(timer);
+      }, interval);
+    } catch(err){
+      // браузер заблокировал автоплей — попросим клик по открытке для запуска
+      const hint = document.createElement('div');
+      hint.className = 'tap-hint';
+      hint.textContent = 'Нажмите по открытке, чтобы включить музыку';
+      document.body.appendChild(hint);
+      function oncePlay(){
+        audio.play().then(()=> {
+          playing = true;
+          // плавный fadeIn вручную
+          let i=0; const steps=30; const interval=3000/steps;
+          audio.volume = 0;
+          const timer = setInterval(()=>{ i++; audio.volume = Math.min(1, i/steps); if(i>=steps) clearInterval(timer); }, interval);
+        }).catch(()=>{});
+        hint.remove();
+        document.getElementById('card').removeEventListener('click', oncePlay);
+      }
+      document.getElementById('card').addEventListener('click', oncePlay, { once:true });
+    }
+  }
+
+  // попытка автозапуска
+  fadeInAudio(3);
+
+})();
+</script>
+</body>
+</html>
